@@ -1,0 +1,182 @@
+# AI Adoption Playbook
+
+A skills framework for leaders responsible for AI adoption — founders, CTOs, CAIOs, VPs of Engineering, COOs, or anyone who needs to show the board that AI investment is producing results. Not a coding tool. Not a PM tool. A consulting methodology in agent-readable skills.
+
+## Who This Is For
+
+Any leader who got handed the "make AI work here" mandate and has to report progress to leadership. This includes:
+
+- **Founders and CTOs** — board is asking about AI strategy, need structured answers
+- **VPs/Directors of Engineering** — got "AI adoption" added to their OKRs, need to move 50-200 engineers
+- **Chief AI Officers and fractional CAIOs** — need a repeatable framework across teams or clients
+- **COOs at non-tech companies** — no CTO exists, AI adoption landed on their desk
+- **Consultants and advisors** — need a structured diagnostic and planning methodology for client engagements
+
+Skills adapt to company size and role: lighter touch for small teams, deeper process for large orgs.
+
+NOT for: companies with established AI/ML teams already driving adoption, engineers seeking coding tools, ML researchers.
+
+## The Problem
+
+Founders buy AI tool licenses, tell teams to use them, nothing happens. Board asks "what's your AI strategy?" — no good answer. This playbook breaks that loop.
+
+## Three Pillars
+
+Every AI adoption failure maps to one of these. Every skill diagnoses or addresses them.
+
+1. **Psychological barriers** — fear of replacement, identity threat ("I don't need a crutch"), perfectionism, social signaling
+2. **Integration failures** — tools don't fit workflows, wrong first use case, too much friction, tried once and gave up
+3. **Ownership gaps** — nobody owns it, no metrics, no accountability, no feedback loop, leadership doesn't model behavior
+
+## Board-Readiness Principle
+
+The throughline. Every skill output must be expressible in terms a VC understands: specific numbers, clear timelines, named owners, ROI framing. No "we're exploring." No "our developers love it." Numbers or it didn't happen.
+
+The exposure register satisfies this principle because its reported form is counts, not a list. "18 active, 5 need attention, 7 can take actions, 9 touch personal data" is a number a board can act on. The underlying table is working material.
+
+## Skill Invocation
+
+When invoking skills via the Skill tool, you MUST use the fully-qualified name with the `ai-adoption-playbook:` prefix. For example:
+- `Skill(ai-adoption-playbook:fluency-assessment)` — NOT `Skill(fluency-assessment)`
+- `Skill(ai-adoption-playbook:blocker-diagnosis)` — NOT `Skill(blocker-diagnosis)`
+
+This applies to ALL skills in this plugin. Short names in documentation are for readability — always add the `ai-adoption-playbook:` prefix when calling the Skill tool.
+
+## Skill Chaining Rules
+
+1. `fluency-assessment` MUST run before any other interactive or workflow skill. It's the diagnostic before the prescription.
+2. `full-adoption-cycle` orchestrates the complete sequence: fluency-assessment -> blocker-diagnosis -> first-use-case-picker -> data-readiness-check -> 90-day-plan-builder -> board-narrative-coach
+3. `quarterly-review` confirms the exposure register (if one exists), re-runs fluency-assessment, and compares to previous scorecard
+4. Each skill produces an artifact that feeds the next skill in the chain
+5. `fluency-assessment` stamps two fields on the scorecard: `Department:` (from Q3) and `Currency:` (from Q4). Every downstream skill (`blocker-diagnosis`, `first-use-case-picker`, `90-day-plan-builder`, `roi-calculator`, `adoption-scorecard`, `board-ai-update`, `board-narrative-coach`, `tool-stack-audit`) reads these fields — Department determines which profile to load (Engineering / Sales / Generic), Currency determines the symbol used in money references (`$` / `€` / `£` / other). When the leader picks "multiple departments" they choose a primary; the cycle runs on the primary and can be re-run for another department. When no scorecard is available, default to USD ($). `ai-exposure-register` reads `Department:` only — it records no money.
+6. `reporting-readiness-assessment` routes a Risk Posture gap to `ai-exposure-register` and then `90-day-plan-builder`'s Review Layer track, not `quarterly-review` — governance, rollout review, and guardrails need named owners and dates, not a re-score, and they need a list of use cases before owners can be assigned to anything.
+7. `data-readiness-check` runs between `first-use-case-picker` and `90-day-plan-builder`. Its verdict branches: Ready or Gap-only routes to `90-day-plan-builder` (Gap adds a Phase 0); any Blocker routes back to `first-use-case-picker` to pick a different use case.
+8. `ai-exposure-register` runs when `reporting-readiness-assessment` shows a Risk Posture gap, before `90-day-plan-builder`'s Review Layer track. It may also run standalone as an exception to rule 1, because the register is useful before any fluency assessment and gating it kills adoption. Its output feeds `board-ai-update`'s exposure section and is re-confirmed by `quarterly-review`.
+
+## Local Configuration (adoption.local.md)
+
+Leaders can persist company context in an `adoption.local.md` file so skills stop re-asking for it:
+
+- **Cowork**: saved in any folder shared with Cowork
+- **Claude Code**: saved in the project's `.claude/` directory
+
+Format (all fields optional):
+
+```markdown
+# AI Adoption Playbook Configuration
+
+- Company: Acme GmbH
+- Departments: Engineering (primary), Sales   # one department, several with a (primary), or "whole org"
+- Currency: EUR                               # USD / EUR / GBP / other
+- Company size: 120 employees, 45 in Engineering
+- Board cadence: quarterly, next meeting 2026-09-15
+- AI tools in use: GitHub Copilot (30 seats), ChatGPT Team (15 seats)
+- Previous scorecards: Engineering: <path or paste>; Sales: <path or paste>
+```
+
+**Scope:** the playbook runs per department. `Departments:` may name one department, several — append `(primary)` directly after the primary department (e.g., `Sales (primary)` makes Sales the primary), or `whole org`. With several, each run covers one department — the primary unless the leader says otherwise — and the cycle is re-run per department, each with its own scorecard. `whole org` maps to the Generic profile unless the leader narrows a given run to a specific department.
+
+**Precedence:** a scorecard produced this cycle always wins. The fallback order for `Department:` and `Currency:` is: current scorecard → `adoption.local.md` (the department this run covers; by default the one marked `(primary)`) → ask the leader (currency defaults to USD). `fluency-assessment` reads the config to pre-fill answers (confirming, not skipping, its questions). Skills never write this file without asking.
+
+## Deliverable Output Conventions
+
+Every skill that produces a saved deliverable (scorecard, plan, report, narrative) follows the same naming and branding convention.
+
+**Filename when saving to disk** (whether Cowork saves a `.docx`/`.pdf` or Claude Code saves a `.md`):
+
+```
+{deliverable-slug}-{company-slug}-{YYYY-MM-DD}.{ext}
+```
+
+Examples:
+- `fluency-scorecard-acme-2026-05-14.md`
+- `90-day-plan-acme-2026-05-14.docx`
+- `roi-calculation-acme-2026-Q1-2026-05-14.pdf`
+
+`company-slug` is lowercase, hyphens for spaces. `YYYY-MM-DD` is the date the deliverable was produced. Omit `company-slug` if the leader hasn't named the company.
+
+**Branding footer** (appended at the bottom of every saved deliverable):
+
+```
+---
+*Generated by [AI Adoption Playbook](https://github.com/adimango/ai-adoption-playbook) v1.3.0 on YYYY-MM-DD*
+```
+
+The version is read from `.claude-plugin/plugin.json` at generation time. When the plugin version bumps, also bump the hardcoded `v1.3.0` in each skill's Output template (13 skills currently: fluency-assessment, reporting-readiness-assessment, blocker-diagnosis, first-use-case-picker, data-readiness-check, ai-exposure-register, 90-day-plan-builder, board-narrative-coach, board-ai-update, roi-calculator, adoption-scorecard, tool-stack-audit, quarterly-review). Run `scripts/check-version.sh` to verify they match `.claude-plugin/plugin.json`; `scripts/check-version.sh --fix` rewrites them.
+
+The date is today's date in YYYY-MM-DD format.
+
+## Voice and Tone
+
+Direct. Specific. No buzzwords. No AI hype. No consultant jargon ("digital transformation," "change management"). Calm confidence. Active voice. Short sentences. The founder is busy and stressed — respect their time. Like a founder-friendly COO, not a McKinsey deck.
+
+## Anti-Patterns to Block
+
+Skills must detect and resist these founder behaviors:
+
+| Pattern | What They Say | What to Do |
+|---------|--------------|------------|
+| Vague self-assessment | "We're pretty early" | Force specifics: who uses what, how often, for what |
+| Tool-first thinking | "Just tell me which tools to buy" | Run fluency-assessment first. Diagnosis before purchasing. |
+| Strategy doc theater | "We need an AI strategy document" | Produce a narrative with numbers, not a slide deck |
+| Delegation without definition | "Our CTO will handle it" | Name specific owners for specific actions |
+| One-and-done | "We tried it and it didn't work" | Dig in: who tried what, for how long, what specifically failed |
+| Big bang rollout | "We'll roll it out to everyone" | Start small. Highest-probability-of-success use case first. |
+
+## Skill Types
+
+- **Component skills** (templates, 10-30 min) — produce a specific deliverable
+- **Interactive skills** (guided conversations, 30-90 min) — collaborative diagnosis and planning
+- **Workflow skills** (multi-step, days/weeks) — orchestrate multiple skills in sequence
+
+## Available Skills
+
+### Entry Point
+- `using-playbook` — routes to the right skill based on context and assessment status
+
+### Component (templates)
+- `adoption-scorecard` — maps team/role to current AI tool usage with specifics
+- `board-ai-update` — board-ready narrative template with required numbers
+- `tool-stack-audit` — what you pay for vs. what gets used, waste calculation
+- `roi-calculator` — quantify impact in board terms with formulas
+- `data-readiness-check` — checks whether the data behind a chosen use case is actually usable before committing to a rollout plan
+
+### Interactive (guided conversations)
+- `fluency-assessment` — Stage 1 entry point: diagnostic across three pillars (MUST run first)
+- `reporting-readiness-assessment` — Stage 2 diagnostic: outcome rigor, risk posture, board defensibility. Runs after fluency-assessment when Integration ≥ 3/5.
+- `blocker-diagnosis` — deep dive on what's stuck and why, per pillar
+- `first-use-case-picker` — choose where to start for maximum visible wins in 2-4 weeks
+- `90-day-plan-builder` — phased rollout with board-cycle milestones and named owners (Adoption track), or a governance/rollout-review/guardrails build-out (Review Layer track, triggered by a Risk Posture gap)
+- `board-narrative-coach` — rehearse with a skeptical VC, then draft the update
+- `ai-exposure-register` — collects what AI is actually running, function by function, with owner, authority and data reach. Produces the exposure section of the board report.
+
+### Workflow (multi-step)
+- `full-adoption-cycle` — end-to-end: assessment -> diagnosis -> use case -> plan -> narrative
+- `quarterly-review` — re-assess, compare to last quarter, generate board update
+
+## Skill Conventions
+
+- Interactive skills ask ONE question at a time. Multiple choice when possible.
+- Skills produce artifacts the founder can actually use (board decks, plans, scorecards)
+- Never promise specific ROI numbers — help founders calculate their own
+- Always ground advice in the three pillars
+- Quantify impact in board-relevant terms (runway, velocity, retention, revenue)
+- Every skill has an Anti-Patterns section and a defined Output format. Interactive and workflow skills also have a Flow digraph; component skills omit it (flowcharts only where sequencing is non-obvious)
+
+## Directory Structure
+
+```
+skills/
+  <skill-name>/
+    SKILL.md           # Main skill file (required)
+    supporting-file.*  # Only if needed (scripts, templates)
+CONNECTORS.md          # Tool-agnostic connector categories (~~category placeholders)
+.mcp.json              # Pre-configured MCP servers (all optional)
+docs/
+  BRIEFING.md          # Full framework context and design principles
+CLAUDE.md              # This file
+```
+
+## Full Briefing
+
+For complete framework context including design principles, skill file format spec, and build process, see `docs/BRIEFING.md`.
